@@ -49,7 +49,6 @@ class Container {
 
     this.objects.push(element);
     this.currentLine.push(element);
-
     element.positionInLine = this.currentLine.length - 1;
 
     if (this.currentLine.length === this.maxObjectsInLine) {
@@ -84,7 +83,6 @@ class Container {
           firstElementIndexInLine,
           this.objects.length - firstElementIndexInLine,
         );
-
         newElements.splice(element.positionInLine, 1);
 
         this.currentLine = [];
@@ -103,7 +101,7 @@ class Container {
   recalculateSize() {
     if (!this.isEmpty()) {
       if (this.isHorizontal) {
-        const elementFullWidth = (this.objectWidth + this.paddingLeft + this.paddingRight);
+        const elementFullWidth = this.objectWidth + this.paddingLeft + this.paddingRight;
         if (this.width < this.maxObjectsInLine * elementFullWidth) {
           this.width = this.maxObjectsInLine * elementFullWidth;
         }
