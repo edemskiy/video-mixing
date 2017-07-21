@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from 'react';
 import _ from 'lodash';
-import Container from '../libs/Container';
+import Container from '../controls/Container';
 
 class Main extends React.Component {
   componentDidMount() {
