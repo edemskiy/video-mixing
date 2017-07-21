@@ -1,118 +1,140 @@
+// import _ from 'lodash';
+
 class Container {
+  constructor({ name, maxObjectsInLine, objectSize,
+    basePosition, isHorizontal = true, paddingTop,
+    paddingBottom, paddingLeft, paddingRight }) {
+    this.name = (typeof name === 'string') ? name : Math.random().toString(36).substring(7);
+    this.isHorizontal = (typeof isHorizontal === 'boolean') ? isHorizontal : true;
 
-  constructor({name,
-    maxObjectsInLine, objectSize, basePosition, isHorizontal,
-    paddingTop, paddingBottom, paddingLeft, paddingRight}) {
+    this.maxObjectsInLine = maxObjectsInLine > 0
+      && !isNaN(maxObjectsInLine)
+      && Number.isFinite(maxObjectsInLine)
+      ? Math.floor(maxObjectsInLine) : 2;
 
-    this.name = name;
-    this._isHorizontal = isHorizontal;
-    this._maxObjectsInLine = maxObjectsInLine;
-    this._objectWidth = objectSize.width;
-    this._objectHeight = objectSize.height;
-    this.positionX = basePosition.x;
-    this.positionY = basePosition.y;
+    this.objectWidth = objectSize
+      && objectSize.width > 0
+      && !isNaN(objectSize.width)
+      && Number.isFinite(objectSize.width)
+      ? objectSize.width : 320;
 
+    this.objectHeight = objectSize
+      && objectSize.height > 0
+      && !isNaN(objectSize.height)
+      && Number.isFinite(objectSize.height)
+      ? objectSize.height : 240;
 
-    this.paddingTop =  !isNaN(parseFloat(paddingTop)) && isFinite(paddingTop)  ? paddingTop : 0;
-    this.paddingBottom = !isNaN(parseFloat(paddingBottom)) && isFinite(paddingBottom) ? paddingBottom : 0;
-    this.paddingLeft = !isNaN(parseFloat(paddingLeft)) && isFinite(paddingLeft)? paddingLeft : 0;
-    this.paddingRight = !isNaN(parseFloat(paddingRight)) && isFinite(paddingRight)? paddingRight : 0;
+    this.positionX = basePosition
+      && !isNaN(basePosition.x)
+      && Number.isFinite(basePosition.x)
+      ? basePosition.x : 0;
+
+    this.positionY = basePosition
+      && !isNaN(basePosition.y)
+      && Number.isFinite(basePosition.y)
+      ? basePosition.y : 0;
+
+    this.paddingTop = !isNaN(paddingTop) && Number.isFinite(paddingTop)
+      ? paddingTop : 0;
+    this.paddingBottom = !isNaN(paddingBottom) && Number.isFinite(paddingBottom)
+      ? paddingBottom : 0;
+    this.paddingLeft = !isNaN(paddingLeft) && Number.isFinite(paddingLeft)
+      ? paddingLeft : 0;
+    this.paddingRight = !isNaN(paddingRight) && Number.isFinite(paddingRight)
+      ? paddingRight : 0;
 
     this.width = 0;
     this.height = 0;
 
     this.objects = [];
-    this._currentLine = [];
+    this.currentLine = [];
 
-    this._currentX = this.positionX;
-    this._currentY = this.positionY;
-
+    this.currentX = this.positionX;
+    this.currentY = this.positionY;
   }
 
   addNewObject(name) {
-    let element = {name,
-      coordinates: {x: this._currentX + this.paddingLeft, y: this._currentY+this.paddingTop}};
-    this.objects.push(element);
-    this._currentLine.push(element);
-    this.objects[this.objects.length-1].positionInLine = this._currentLine.length-1;
+    const element = {
+      name,
+      coordinates: {
+        x: this.currentX + this.paddingLeft,
+        y: this.currentY + this.paddingTop,
+      },
+    };
 
-    if (this._currentLine.length === this._maxObjectsInLine) {
-      this._currentLine = [];
-      if (this._isHorizontal) {
-        this._currentX = this.positionX;
-        this._currentY += (this._objectHeight + this.paddingBottom + this.paddingTop);
+    this.objects.push(element);
+    this.currentLine.push(element);
+
+    element.positionInLine = this.currentLine.length - 1;
+
+    if (this.currentLine.length === this.maxObjectsInLine) {
+      this.currentLine = [];
+      if (this.isHorizontal) {
+        this.currentX = this.positionX;
+        this.currentY += (this.objectHeight + this.paddingBottom + this.paddingTop);
+      } else {
+        this.currentY = this.positionY;
+        this.currentX += (this.objectWidth + this.paddingRight + this.paddingLeft);
       }
-      else {
-        this._currentY = this.positionY;
-        this._currentX += (this._objectWidth + this.paddingRight + this.paddingLeft);
-      }
+    } else if (this.isHorizontal) {
+      this.currentX += (this.objectWidth + this.paddingRight + this.paddingLeft);
     } else {
-      if (this._isHorizontal) {
-        this._currentX += (this._objectWidth + this.paddingRight + this.paddingLeft);
-      }
-      else {
-        this._currentY += (this._objectHeight + this.paddingBottom + this.paddingTop);
-      }
+      this.currentY += (this.objectHeight + this.paddingBottom + this.paddingTop);
     }
 
-    this._allLines = Math.floor(this.objects.length / this._maxObjectsInLine);
-    this._allLines = ((this.objects.length - this._allLines*this._maxObjectsInLine) === 0) ? this._allLines : (this._allLines + 1);
-    this.objects[this.objects.length-1].line = this._allLines;
+    this.allLines = Math.ceil(this.objects.length / this.maxObjectsInLine);
+    element.line = this.allLines;
 
-    this._recalculateSize();
-
+    this.recalculateSize();
   }
 
   deleteObject(name) {
-
-    this.objects.forEach((element, index)=> {
+    this.objects.forEach((element, index) => {
       if (element.name === name) {
+        const firstElementIndexInLine = index - element.positionInLine;
+        this.currentX = this.objects[firstElementIndexInLine].coordinates.x - this.paddingLeft;
+        this.currentY = this.objects[firstElementIndexInLine].coordinates.y - this.paddingTop;
 
-        let firstElementIndexInLine = index-element.positionInLine;
-        this._currentX = this.objects[firstElementIndexInLine].coordinates.x - this.paddingLeft;
-        this._currentY = this.objects[firstElementIndexInLine].coordinates.y - this.paddingTop;
-
-        let newElements = this.objects.splice(
+        const newElements = this.objects.splice(
           firstElementIndexInLine,
-          this.objects.length - firstElementIndexInLine
+          this.objects.length - firstElementIndexInLine,
         );
 
         newElements.splice(element.positionInLine, 1);
 
-        this._currentLine = [];
-        newElements.forEach((newElement)=> {
+        this.currentLine = [];
+        newElements.forEach((newElement) => {
           this.addNewObject(newElement.name);
         });
       }
     });
-    this._recalculateSize();
+    this.recalculateSize();
+  }
 
-  };
-
-  isEmpty(){
+  isEmpty() {
     return (this.objects.length === 0);
   }
 
-  _recalculateSize(){
-    if(!this.isEmpty()){
-      if (this._isHorizontal) {
-
-        if (this.width < this._maxObjectsInLine * (this._objectWidth + this.paddingLeft + this.paddingRight))
-          this.width = this._maxObjectsInLine * (this._objectWidth + this.paddingLeft + this.paddingRight);
-        this.height = this._allLines * (this._objectHeight + this.paddingTop + this.paddingBottom);
-
+  recalculateSize() {
+    if (!this.isEmpty()) {
+      if (this.isHorizontal) {
+        const elementFullWidth = (this.objectWidth + this.paddingLeft + this.paddingRight);
+        if (this.width < this.maxObjectsInLine * elementFullWidth) {
+          this.width = this.maxObjectsInLine * elementFullWidth;
+        }
+        this.height = this.allLines * (this.objectHeight + this.paddingTop + this.paddingBottom);
       } else {
-        if (this.height < this._maxObjectsInLine * (this._objectHeight + this.paddingTop + this.paddingBottom))
-          this.height = this._maxObjectsInLine * (this._objectHeight + this.paddingTop + this.paddingBottom);
-        this.width = this._allLines * (this._objectWidth + this.paddingLeft + this.paddingRight);
+        const elementFullHeight = this.objectHeight + this.paddingTop + this.paddingBottom;
+        if (this.height < this.maxObjectsInLine * elementFullHeight) {
+          this.height = this.maxObjectsInLine * elementFullHeight;
+        }
+        this.width = this.allLines * (this.objectWidth + this.paddingLeft + this.paddingRight);
       }
-    }else{
+    } else {
       this.width = 0;
       this.height = 0;
     }
-
   }
-
 }
 
 export default Container;
