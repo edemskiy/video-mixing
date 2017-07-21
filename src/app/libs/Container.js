@@ -1,47 +1,32 @@
-// import _ from 'lodash';
+import _ from 'lodash';
 
 class Container {
   constructor({ name, maxObjectsInLine, objectSize,
-    basePosition, isHorizontal = true, paddingTop,
+    basePosition, isHorizontal, paddingTop,
     paddingBottom, paddingLeft, paddingRight }) {
-    this.name = (typeof name === 'string') ? name : Math.random().toString(36).substring(7);
-    this.isHorizontal = (typeof isHorizontal === 'boolean') ? isHorizontal : true;
+    this.name = _.isString(name) ? name : Math.random().toString(36).substring(7);
+    this.isHorizontal = _.isBoolean(isHorizontal) ? isHorizontal : true;
 
-    this.maxObjectsInLine = maxObjectsInLine > 0
-      && !isNaN(maxObjectsInLine)
-      && Number.isFinite(maxObjectsInLine)
+    this.maxObjectsInLine = _.isFinite(maxObjectsInLine) && maxObjectsInLine > 0
       ? Math.floor(maxObjectsInLine) : 2;
 
-    this.objectWidth = objectSize
+    this.objectWidth = _.isObject(objectSize)
+      && _.isFinite(objectSize.width)
       && objectSize.width > 0
-      && !isNaN(objectSize.width)
-      && Number.isFinite(objectSize.width)
       ? objectSize.width : 320;
 
-    this.objectHeight = objectSize
+    this.objectHeight = _.isObject(objectSize)
+      && _.isFinite(objectSize.height)
       && objectSize.height > 0
-      && !isNaN(objectSize.height)
-      && Number.isFinite(objectSize.height)
       ? objectSize.height : 240;
 
-    this.positionX = basePosition
-      && !isNaN(basePosition.x)
-      && Number.isFinite(basePosition.x)
-      ? basePosition.x : 0;
+    this.positionX = _.isObject(basePosition) && _.isFinite(basePosition.x) ? basePosition.x : 0;
+    this.positionY = _.isObject(basePosition) && _.isFinite(basePosition.y) ? basePosition.y : 0;
 
-    this.positionY = basePosition
-      && !isNaN(basePosition.y)
-      && Number.isFinite(basePosition.y)
-      ? basePosition.y : 0;
-
-    this.paddingTop = !isNaN(paddingTop) && Number.isFinite(paddingTop)
-      ? paddingTop : 0;
-    this.paddingBottom = !isNaN(paddingBottom) && Number.isFinite(paddingBottom)
-      ? paddingBottom : 0;
-    this.paddingLeft = !isNaN(paddingLeft) && Number.isFinite(paddingLeft)
-      ? paddingLeft : 0;
-    this.paddingRight = !isNaN(paddingRight) && Number.isFinite(paddingRight)
-      ? paddingRight : 0;
+    this.paddingTop = !isNaN(paddingTop) && _.isFinite(paddingTop) ? paddingTop : 0;
+    this.paddingBottom = !isNaN(paddingBottom) && _.isFinite(paddingBottom) ? paddingBottom : 0;
+    this.paddingLeft = !isNaN(paddingLeft) && _.isFinite(paddingLeft) ? paddingLeft : 0;
+    this.paddingRight = !isNaN(paddingRight) && _.isFinite(paddingRight) ? paddingRight : 0;
 
     this.width = 0;
     this.height = 0;
