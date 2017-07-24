@@ -11,7 +11,7 @@ class Main extends React.Component {
       basePosition: { x: 0, y: 0 },
       isHorizontal: true,
       paddingTop: 10,
-      paddingBottom: 20,
+      paddingBottom: 10,
       paddingLeft: 10,
       paddingRight: 10,
     });

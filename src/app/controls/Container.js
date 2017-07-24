@@ -86,9 +86,8 @@ class Container {
         newElements.splice(element.positionInLine, 1);
 
         this.currentLine = [];
-        newElements.forEach((newElement) => {
-          this.addNewObject(newElement.name);
-        });
+        newElements.forEach(newElement => this.addNewObject(newElement.name));
+        this.allLines = Math.ceil(_.size(this.objects) / this.maxObjectsInLine);
       }
     });
     this.recalculateSize();
