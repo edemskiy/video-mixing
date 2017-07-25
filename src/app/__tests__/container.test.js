@@ -20,29 +20,28 @@ describe('Main test', () => {
       });
 
       afterEach(() => {
-        for (let i = 1; i <= _.size(container.objects); i += 1) {
-          // check "line" property of element
+        container.objects.forEach((elem, i) => {
+          // check "line" property of the element
           assert.equal(
-            container.objects[i - 1].line,
-            Math.floor(((i - 1) / container.maxObjectsInLine) + 1),
+            elem.line,
+            Math.floor((i / container.maxObjectsInLine) + 1),
           );
 
-          // check "x" coordinate of element
+          // check "x" coordinate of the element
           assert.equal(
-            container.objects[i - 1].coordinates.x,
-            container.positionX +
-              container.paddingLeft + (((i - 1) % container.maxObjectsInLine) *
+            elem.coordinates.x,
+            container.positionX + container.paddingLeft + ((i % container.maxObjectsInLine) *
               (container.paddingLeft + container.objectWidth + container.paddingRight)),
           );
 
-          // check "y" coordinate of element
+          // check "y" coordinate of the element
           assert.equal(
-            container.objects[i - 1].coordinates.y,
-            container.positionY +
-              container.paddingTop + ((container.objects[i - 1].line - 1) *
+            elem.coordinates.y,
+            container.positionY + container.paddingTop + ((elem.line - 1) *
               (container.paddingTop + container.objectHeight + container.paddingBottom)),
           );
-        }
+        });
+
         // check total amount of lines in container
         assert.equal(
             container.allLines,
