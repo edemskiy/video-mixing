@@ -1,6 +1,18 @@
 import _ from 'lodash';
-
+/** Class representing a Container. */
 class Container {
+  /**
+   * Create a container.
+   * @param {string} name - The name of the container.
+   * @param {boolean} isHorizontal - Represents orientation of container.
+   * @param {number} maxObjectsInLine - Maximum number of elements in a row(column).
+   * @param {object} objectSize - width and height of the single element in container.
+   * @param {object} basePosition - x and y coordinate of top left corner of the container.
+   * @param {number} paddingTop - top indent of the container element
+   * @param {number} paddingBottom - bottom indent of the container element
+   * @param {number} paddingLeft - left indent of the container element
+   * @param {number} paddingRight - right indent of the container element
+   */
   constructor({ name, maxObjectsInLine, objectSize,
     basePosition, isHorizontal, paddingTop,
     paddingBottom, paddingLeft, paddingRight }) {
@@ -37,7 +49,10 @@ class Container {
     this.currentX = this.positionX;
     this.currentY = this.positionY;
   }
-
+  /**
+   * Add new element to the container.
+   * @param {string} name - name of the new element.
+   */
   addNewObject(name) {
     const element = {
       name,
@@ -71,7 +86,10 @@ class Container {
 
     this.recalculateSize();
   }
-
+  /**
+   * Delete element from container by name.
+   * @param {string} name - name of the element to be deleted.
+   */
   deleteObject(name) {
     this.objects.forEach((element, index) => {
       if (element.name === name) {
@@ -92,11 +110,16 @@ class Container {
     });
     this.recalculateSize();
   }
-
+  /**
+   * Checks if container has elements.
+   * @returns {boolean} Returns true if container doesn't have elements, else false.
+   */
   isEmpty() {
     return (this.objects.length === 0);
   }
-
+  /**
+   * Recalculate the size of the container.
+   */
   recalculateSize() {
     if (!this.isEmpty()) {
       if (this.isHorizontal) {

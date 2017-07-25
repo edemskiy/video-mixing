@@ -13,7 +13,16 @@ describe('Main test', () => {
       let container = null;
 
       beforeEach(() => {
-        container = new Container({ maxObjectsInLine: elementsNumber });
+        container = new Container({
+          maxObjectsInLine: elementsNumber,
+          objectSize: { width: 320, height: 240 },
+          basePosition: { x: 5, y: 5 },
+          isHorizontal: true,
+          paddingTop: 5,
+          paddingBottom: 5,
+          paddingLeft: 5,
+          paddingRight: 5,
+        });
         for (let i = 1; i <= (container.maxObjectsInLine * 2) + 1; i += 1) {
           container.addNewObject(generateRandomString());
         }
@@ -22,10 +31,7 @@ describe('Main test', () => {
       afterEach(() => {
         container.objects.forEach((elem, i) => {
           // check "line" property of the element
-          assert.equal(
-            elem.line,
-            Math.floor((i / container.maxObjectsInLine) + 1),
-          );
+          assert.equal(elem.line, Math.floor((i / container.maxObjectsInLine) + 1));
 
           // check "x" coordinate of the element
           assert.equal(
@@ -49,29 +55,50 @@ describe('Main test', () => {
           );
       });
 
-      it('Adding new object', () => {
+      it('Adding new element to container', () => {
         const oldElementsNumber = _.size(container.objects);
         container.addNewObject(generateRandomString());
         assert.equal(_.size(container.objects), oldElementsNumber + 1);
       });
 
-      it('Deleting last element', () => {
+      it('Deleting last element from container', () => {
         const oldElementsNumber = _.size(container.objects);
         container.deleteObject(_.last(container.objects).name);
         assert.equal(_.size(container.objects), oldElementsNumber - 1);
       });
 
-      it('Deleting first element', () => {
+      it('Deleting first element from container', () => {
         const oldElementsNumber = _.size(container.objects);
         container.deleteObject(_.first(container.objects).name);
         assert.equal(_.size(container.objects), oldElementsNumber - 1);
       });
 
-      it('Deleting random element', () => {
+      it('Deleting random element from container', () => {
         const oldElementsNumber = _.size(container.objects);
         container.deleteObject(container.objects[
             _.random(1, _.size(container.objects) - 2)
           ].name);
+        assert.equal(_.size(container.objects), oldElementsNumber - 1);
+      });
+
+      it('Combination deleting and adding elements', () => {
+        const oldElementsNumber = _.size(container.objects);
+        container.deleteObject(container.objects[
+            _.random(1, _.size(container.objects) - 2)
+          ].name);
+
+        container.addNewObject(generateRandomString());
+
+        container.deleteObject(container.objects[
+            _.random(1, _.size(container.objects) - 2)
+          ].name);
+
+        container.deleteObject(container.objects[
+            _.random(1, _.size(container.objects) - 2)
+          ].name);
+
+        container.addNewObject(generateRandomString());
+
         assert.equal(_.size(container.objects), oldElementsNumber - 1);
       });
     });
