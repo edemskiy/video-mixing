@@ -83,6 +83,7 @@ describe('Main test', () => {
 
       it('Combination deleting and adding elements', () => {
         const oldElementsNumber = _.size(container.objects);
+        // delete three random elements and add two
         container.deleteObject(container.objects[
             _.random(1, _.size(container.objects) - 2)
           ].name);

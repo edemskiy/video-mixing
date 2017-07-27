@@ -2,6 +2,9 @@
 import React from 'react';
 import _ from 'lodash';
 import Container from '../controls/Container';
+import CanvasCamera from '../controls/CanvasCamera';
+import CanvasMixer from '../controls/CanvasMixer';
+import Camera from '../controls/Camera';
 
 class Main extends React.Component {
   componentDidMount() {
@@ -15,32 +18,30 @@ class Main extends React.Component {
       paddingLeft: 10,
       paddingRight: 10,
     });
+    this.canvasMixer = new CanvasMixer();    
+    this.canvasDiv.appendChild(this.canvasMixer.canvasElement);
   }
 
-  addNewObjectToContainer() {
-    const newObjectName = `object${this.container.objects.length + 1}`;
-    this.container.addNewObject(newObjectName);
+  addVideo() {
+    const canvasCamera = new CanvasCamera(new Camera(document.createElement('video')));
+    this.canvasMixer.addVideoElement(canvasCamera);
+  }
 
-    this.mainDiv.style.height = `${this.container.height}px`;
-    this.mainDiv.style.width = `${this.container.width}px`;
-    
-    const element = document.createElement('div');
-    element.classList.add('element');
-    element.style.height = `${this.container.objectHeight}px`;
-    element.style.width = `${this.container.objectWidth}px`;
-    element.style.top = `${_.last(this.container.objects).coordinates.y}px`;
-    element.style.left = `${_.last(this.container.objects).coordinates.x}px`;
-    element.id = newObjectName;
-
-    this.mainDiv.appendChild(element);
+  deleteVideo() {
+    if (_.size(this.canvasMixer.containers[0].objects)) {
+      const objNum = _.random(0, _.size(this.canvasMixer.containers[0].objects) - 1);
+      const objName = this.canvasMixer.containers[0].objects[objNum].name;
+      this.canvasMixer.deleteVideoElement(objName);
+    }
   }
 
   render() {
     return (
       <div>
         <h1> video container test </h1>
-        <button onClick={() => this.addNewObjectToContainer()} >ADD ELEMENT</button>
-        <div className="mainDiv" ref={(c) => { this.mainDiv = c; }} />
+        <button onClick={() => this.addVideo()} >ADD video</button>
+        <button onClick={() => this.deleteVideo()} >DELETE video</button>
+        <div ref={(c) => { this.canvasDiv = c; }} />
       </div>
     );
   }
