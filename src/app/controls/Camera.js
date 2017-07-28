@@ -1,19 +1,19 @@
 /* global navigator, document, window */
 
 class Camera {
-  constructor(video) {
+  constructor() {
     // for old browsers
     if (navigator.mediaDevices === undefined) {
       navigator.mediaDevices = {};
     }
 
     if (navigator.mediaDevices.getUserMedia === undefined) {
-      navigator.mediaDevices.getUserMedia = this.promisifiedOldGUM;
+      navigator.mediaDevices.getUserMedia = Camera.promisifiedOldGUM;
     }
 
     this.stream = null;
-    // this.videoElement = document.createElement('video');
-    this.videoElement = video;
+    // this.videoElement = video;
+    this.videoElement = document.createElement('video');
     const parametrs = { id: null, constraints: null };
     this.setParametrs(parametrs);
   }
@@ -27,7 +27,7 @@ class Camera {
     };
   }
 
-  promisifiedOldGUM(constraints, successCallback) {
+  static promisifiedOldGUM(constraints) {
     // First get ahold of getUserMedia, if present
     const getUserMedia =
       navigator.getUserMedia ||
@@ -50,17 +50,14 @@ class Camera {
     if (!this.stream) {
       return navigator.mediaDevices.getUserMedia(this.constraints)
         .then((stream) => {
-          const videoTracks = stream.getVideoTracks();
-          console.log(`Using video device: ${videoTracks[0].label}`);
           this.stream = stream;
-          this.stream.ended = () => console.log('Stream ended');
           this.videoElement.src = window.URL.createObjectURL(stream);
           this.videoElement.onloadedmetadata = () => {
             this.videoElement.play();
           };
-        }, (err) => { throw err; })
+        })
         .catch((err) => {
-          console.log(err);
+          throw err;
         });
     }
     this.stream.getVideoTracks()[0].stop();

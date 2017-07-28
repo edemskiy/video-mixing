@@ -23,7 +23,7 @@ class Main extends React.Component {
   }
 
   addVideo() {
-    const canvasCamera = new CanvasCamera(new Camera(document.createElement('video')));
+    const canvasCamera = new CanvasCamera(new Camera());
     this.canvasMixer.addVideoElement(canvasCamera);
   }
 
