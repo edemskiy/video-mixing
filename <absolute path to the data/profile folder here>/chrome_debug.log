@@ -1,4 +1,0 @@
-[2644:2644:0731/170553.529943:WARNING:password_store_factory.cc(250)] Using basic (unencrypted) store for password storage. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md for more information about password storage options.
-[2644:2644:0731/170553.552397:INFO:easy_unlock_service_regular.cc(446)] Initializing EasyUnlockService inside the user session.
-[2644:2644:0731/170554.053992:INFO:CONSOLE(8)] "SW registered", source: https://www.google.com/_/chrome/newtab?espv=2&ie=UTF-8 (8)
-[2644:2644:0731/170554.220808:INFO:CONSOLE(373)] "true", source:  (373)
