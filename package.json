@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "atomus": "^2.0.0",
     "chai": "^4.1.0",
     "enzyme": "^2.9.1",
     "immutable": "^3.8.1",
@@ -16,7 +17,8 @@
     "react-router-dom": "^4.1.1",
     "react-test-renderer": "^15.6.1",
     "redux": "https://registry.npmjs.org/redux/-/redux-3.7.1.tgz",
-    "redux-saga": "^0.15.4"
+    "redux-saga": "^0.15.4",
+    "selenium-webdriver": "^3.5.0"
   },
   "devDependencies": {
     "eslint": "3.19.0",

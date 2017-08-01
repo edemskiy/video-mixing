@@ -1,34 +1,65 @@
-/* global requestAnimationFrame */
-// import {Parameters, DOMElements, Stream} from  '../../constants/videoCamera';
+/* global requestAnimationFrame, window, document */
+/* eslint-disable class-methods-use-this */
 import Canvas from './Canvas';
+import Camera from './Camera';
 
 
 class CanvasCamera extends Canvas {
-  constructor(camera) {
+  constructor(parametres) {
     super();
-    this.setParametrs({
+    this.setParametres({
       id: 'canvas-video',
       frameRate: null,
       width: null,
       height: null,
     });
-    this.camera = camera;
-    this.videoElement = this.camera.videoElement;
+    this.camera = new Camera(parametres);
+    this.videoElement = document.createElement('video');
+
+    this.successCamStreamCallback = this.successCamStreamCallback.bind(this);
+    this.rejectCamStreamCallback = this.rejectCamStreamCallback.bind(this);
   }
 
-  // componentDidUpdate(prevProps, prevState){
-  //   if(this.props.stream)this.startCapturingFromVideo();
-  //   else if (!this.props.stream && this.canvasFPSTimerID) this.stopCapturing();
-  // }
+  toggleCamera() {
+    this.camera.toggleCamera(
+      this.successCamStreamCallback,
+      this.rejectCamStreamCallback,
+    );
+  }
+
+  successCamStreamCallback(stream) {
+    if (stream) {
+      this.videoElement.src = window.URL.createObjectURL(stream);
+      this.videoElement.onloadedmetadata = () => {
+        this.videoElement.play();
+      };
+    } else {
+      this.videoElement.pause();
+      this.videoElement.src = '';
+    }
+  }
+
+  rejectCamStreamCallback(err) {
+    throw err;
+  }
 
   startCapturingFromVideo() {
     this.canvasFPSTimerID = setTimeout(this.animationCycle.bind(this), 1000 / this.frameRate);
   }
 
-  animationCycle() {
+  animationCycle(
+    sx = 0,
+    sy = 0,
+    sWidth = this.canvasElement.width,
+    sHeight = this.canvasElement.height,
+    dx = 0,
+    dy = 0,
+    dWidth = this.canvasElement.width,
+    dHeight = this.canvasElement.height,
+  ) {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
     this.canvasElementContext
-    .drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
+    .drawImage(this.videoElement, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
   }
 }
 

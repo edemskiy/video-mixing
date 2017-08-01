@@ -1,8 +1,12 @@
-/* global navigator, document, window */
+/* global navigator */
 
+/** Class representing a Camera. */
 class Camera {
-  constructor() {
-    // for old browsers
+  /**
+   * Create a Camera.
+   * @param {Object} constraints - MediaStreamConstraints object
+   */
+  constructor(constraints) {
     if (navigator.mediaDevices === undefined) {
       navigator.mediaDevices = {};
     }
@@ -12,21 +16,23 @@ class Camera {
     }
 
     this.stream = null;
-    // this.videoElement = video;
-    this.videoElement = document.createElement('video');
-    const parametrs = { id: null, constraints: null };
-    this.setParametrs(parametrs);
+    this.setParameters(constraints);
   }
-
-  setParametrs({ id, constraints }) {
-    this.videoElement.id = id || 'camera-video';
+  /**
+   * Set the constraints
+   * @param {Object} constraints - MediaStreamConstraints object
+   */
+  setParameters(constraints) {
     this.constraints = constraints || {
       audio: false,
       video: { width: 320, height: 240 },
       frameRate: { ideal: 10, max: 15 },
     };
   }
-
+  /**
+   * Alternative for getUserMedia
+   * @param {Object} constraints - MediaStreamConstraints object
+   */
   static promisifiedOldGUM(constraints) {
     // First get ahold of getUserMedia, if present
     const getUserMedia =
@@ -45,26 +51,47 @@ class Camera {
       getUserMedia.call(navigator, constraints, successCallback, errorCallback);
     });
   }
+  /**
+   * Checks if camera is active.
+   * @returns {boolean} Returns true if camera has a stream object, else false.
+   */
+  isActive() {
+    return !!this.stream;
+  }
+  /**
+   * Callback for handling MediaStream.
+   *
+   * @callback successStreamCallback
+   * @param {MediaStream} stream - a MediaStream object.
+   */
 
-  toggleCamera() {
+   /**
+   * Callback for handling getUserMedia error.
+   *
+   * @callback rejectStreamCallback
+   * @param {Error} err - an Error object.
+   */
+
+  /**
+   * Set a MediaStream object if camera isn't active. Otherwise clear a stream
+   * @param {successStreamCallback} successStreamCallback - A callback to run
+   * @param {rejectStreamCallback} rejectStreamCallback - A callback to run
+   */
+  toggleCamera(successStreamCallback, rejectStreamCallback) {
     if (!this.stream) {
-      return navigator.mediaDevices.getUserMedia(this.constraints)
+      navigator.mediaDevices.getUserMedia(this.constraints)
         .then((stream) => {
           this.stream = stream;
-          this.videoElement.src = window.URL.createObjectURL(stream);
-          this.videoElement.onloadedmetadata = () => {
-            this.videoElement.play();
-          };
+          successStreamCallback(stream);
         })
         .catch((err) => {
-          throw err;
+          rejectStreamCallback(err);
         });
+    } else {
+      this.stream.getVideoTracks()[0].stop();
+      this.stream = null;
+      successStreamCallback(null);
     }
-    this.stream.getVideoTracks()[0].stop();
-    this.videoElement.pause();
-    this.videoElement.src = '';
-    this.stream = null;
-    return null;
   }
 }
 

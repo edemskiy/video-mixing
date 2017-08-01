@@ -7,7 +7,7 @@ import Container from './Container';
 class CanvasMixer extends Canvas {
   constructor() {
     super();
-    this.setParametrs({ id: 'canvas-mixer', frameRate: null, width: 1, height: 1 });
+    this.setParametres({ id: 'canvas-mixer', frameRate: null, width: 1, height: 1 });
 
     this.containers = [];
 
@@ -27,10 +27,6 @@ class CanvasMixer extends Canvas {
     this.videoElements = {};
   }
 
-  componentDidMount() {
-    this.props.newCanvasComponentState(this.canvasElement);
-  }
-
   addVideoElement(element) {
     const oldVideoElementsLength = _.size(this.videoElements);
     const elementName = `video#${Math.random().toString(36).substring(7)}`;
@@ -39,7 +35,9 @@ class CanvasMixer extends Canvas {
     });
     this.containers[0].addNewObject(elementName);
 
-    element.camera.toggleCamera();
+    console.log(element);
+
+    element.toggleCamera();
 
     if (_.size(this.videoElements) === 1 && oldVideoElementsLength === 0) {
       this.startCapturingFromVideo();
@@ -51,7 +49,7 @@ class CanvasMixer extends Canvas {
 
   deleteVideoElement(name) {
     if (!_.size(this.videoElements)) return;
-    this.videoElements[name].camera.toggleCamera();
+    this.videoElements[name].toggleCamera();
     this.videoElements = _.pickBy(this.videoElements, (value, key) => key !== name);
     this.containers[0].deleteObject(name);
 
@@ -99,6 +97,12 @@ class CanvasMixer extends Canvas {
 
   startCapturingFromVideo() {
     this.canvasFPSTimerID = setTimeout(this.animationCycle.bind(this), 1000 / this.frameRate);
+  }
+
+  getStream() {
+    return this.isCapturing
+      ? this.canvasElement.captureStream(1000 / this.frameRate)
+      : null;
   }
 
   animationCycle() {

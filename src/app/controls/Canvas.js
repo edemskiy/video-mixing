@@ -9,7 +9,7 @@ class Canvas {
     this.canvasFPSTimerID = undefined;
   }
 
-  setParametrs({ id, frameRate, width, height }) {
+  setParametres({ id, frameRate, width, height }) {
     this.canvasElement.id = id || '';
     this.canvasElementContext.width = width || 320;
     this.canvasElementContext.height = height || 240;

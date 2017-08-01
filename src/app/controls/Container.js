@@ -3,15 +3,20 @@ import _ from 'lodash';
 class Container {
   /**
    * Create a container.
-   * @param {string} name - The name of the container.
-   * @param {boolean} isHorizontal - Represents orientation of container.
-   * @param {number} maxObjectsInLine - Maximum number of elements in a row(column).
-   * @param {object} objectSize - width and height of the single element in container.
-   * @param {object} basePosition - x and y coordinate of top left corner of the container.
-   * @param {number} paddingTop - top indent of the container element
-   * @param {number} paddingBottom - bottom indent of the container element
-   * @param {number} paddingLeft - left indent of the container element
-   * @param {number} paddingRight - right indent of the container element
+   * @param {Object} parametres - Parametres of the container
+   * @param {string} parametres.name - The name of the container.
+   * @param {boolean} parametres.isHorizontal - Represents orientation of container.
+   * @param {number} parametres.maxObjectsInLine - Maximum number of elements in a row(column).
+   * @param {Object} parametres.objectSize - size of the single element in container.
+   * @param {number} parametres.objectSize.width - width of the single element in container.
+   * @param {number} parametres.objectSize.height - height of the single element in container.
+   * @param {Object} parametres.basePosition - coordinates of top left corner of the container.
+   * @param {number} parametres.basePosition.x - x coordinate of top left corner of the container.
+   * @param {number} parametres.basePosition.y - y coordinate of top left corner of the container.
+   * @param {number} parametres.paddingTop - top indent of the container element
+   * @param {number} parametres.paddingBottom - bottom indent of the container element
+   * @param {number} parametres.paddingLeft - left indent of the container element
+   * @param {number} parametres.paddingRight - right indent of the container element
    */
   constructor({ name, maxObjectsInLine, objectSize,
     basePosition, isHorizontal, paddingTop,
