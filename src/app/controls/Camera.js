@@ -1,12 +1,19 @@
-/* global navigator */
+/* global window, document, navigator */
+/* eslint-disable nothing */
+import Container from './Container';
 
-/** Class representing a Camera. */
 class Camera {
-  /**
-   * Create a Camera.
-   * @param {Object} constraints - MediaStreamConstraints object
-   */
-  constructor(constraints) {
+  constructor({ constraints, stream, container }) {
+    this.canvasFPSTimerID = undefined;
+    this.setConstraints(constraints);
+    this.videoElement = document.createElement('video');
+    this.stream = stream || null;
+
+    this.container = container || new Container({});
+    if (!container) {
+      this.container.addNewObject(Math.random().toString(36).substring(7));
+    }
+
     if (navigator.mediaDevices === undefined) {
       navigator.mediaDevices = {};
     }
@@ -14,20 +21,6 @@ class Camera {
     if (navigator.mediaDevices.getUserMedia === undefined) {
       navigator.mediaDevices.getUserMedia = Camera.promisifiedOldGUM;
     }
-
-    this.stream = null;
-    this.setParameters(constraints);
-  }
-  /**
-   * Set the constraints
-   * @param {Object} constraints - MediaStreamConstraints object
-   */
-  setParameters(constraints) {
-    this.constraints = constraints || {
-      audio: false,
-      video: { width: 320, height: 240 },
-      frameRate: { ideal: 10, max: 15 },
-    };
   }
   /**
    * Alternative for getUserMedia
@@ -51,64 +44,51 @@ class Camera {
       getUserMedia.call(navigator, constraints, successCallback, errorCallback);
     });
   }
-  /**
-   * Checks if camera is active.
-   * @returns {boolean} Returns true if camera has a stream object, else false.
-   */
-  isActive() {
-    return !!this.stream;
-  }
-  /**
-   * Callback for handling MediaStream.
-   *
-   * @callback successStreamCallback
-   * @param {MediaStream} stream - a MediaStream object.
-   */
 
-   /**
-   * Callback for handling getUserMedia error.
-   *
-   * @callback rejectStreamCallback
-   * @param {Error} err - an Error object.
-   */
-
-  /**
-   * Set a MediaStream object if camera isn't active. Otherwise clear a stream
-   * @param {successStreamCallback} successStreamCallback - A callback to run
-   * @param {rejectStreamCallback} rejectStreamCallback - A callback to run
-   */
-
-  activateCamera(successStreamCallback, rejectStreamCallback) {
-    if (this.isActive()) return;
-    navigator.mediaDevices.getUserMedia(this.constraints)
-        .then((stream) => {
-          successStreamCallback(stream);
-        })
-        .catch((err) => {
-          rejectStreamCallback(err);
-        });
+  setConstraints(constraints) {
+    this.constraints = constraints || {
+      audio: false,
+      video: { width: 320, height: 240 },
+      frameRate: { ideal: 10, max: 15 },
+    };
   }
 
-  deactivateCamera(callback) {
-    if (this.isActive()) {
-      this.stream.getVideoTracks()[0].stop();
-      this.stream = null;
-      callback(this.stream);
-    }
+  playVideo() {
+    this.videoElement.src = window.URL.createObjectURL(this.stream);
+    this.videoElement.onloadedmetadata = () => {
+      this.videoElement.play();
+    };
   }
-  toggleCamera(successStreamCallback, rejectStreamCallback) {
-    if (!this.stream) {
+
+  activateCamera() {
+    if (this.stream) {
+      this.playVideo();
+    } else {
       navigator.mediaDevices.getUserMedia(this.constraints)
         .then((stream) => {
-          successStreamCallback(stream);
+          this.setStream(stream);
+          this.playVideo();
         })
         .catch((err) => {
-          rejectStreamCallback(err);
+          throw err;
         });
-    } else {
+    }
+  }
+
+  deactivateCamera() {
+    if (this.stream) {
       this.stream.getVideoTracks()[0].stop();
       this.stream = null;
-      successStreamCallback(null);
+      this.setStream(this.stream);
+    }
+  }
+
+  setStream(stream) {
+    if (stream) {
+      this.stream = stream;
+    } else {
+      this.videoElement.pause();
+      this.videoElement.src = '';
     }
   }
 }

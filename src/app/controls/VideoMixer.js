@@ -1,12 +1,12 @@
-/* global requestAnimationFrame */
+/* global requestAnimationFrame, document */
 /* eslint-disable no-console */
 import _ from 'lodash';
-import Canvas from './Canvas';
 import Container from './Container';
 
-class CanvasMixer extends Canvas {
+class VideoMixer {
   constructor(containerParams) {
-    super();
+    this.canvasElement = document.createElement('canvas');
+    this.canvasElementContext = this.canvasElement.getContext('2d');
     this.setParametres({ id: 'canvas-mixer', frameRate: null, width: 1, height: 1 });
     this.containers = [];
     this.isCapturing = false;
@@ -23,6 +23,15 @@ class CanvasMixer extends Canvas {
     }));
 
     this.videoElements = {};
+  }
+
+  setParametres({ id, frameRate, width, height }) {
+    this.canvasElement.id = id || '';
+    this.canvasElementContext.width = width || 320;
+    this.canvasElementContext.height = height || 240;
+    this.canvasElement.width = width || 320;
+    this.canvasElement.height = height || 240;
+    this.frameRate = frameRate || 25;
   }
 
   addVideoElement(element) {
@@ -94,6 +103,19 @@ class CanvasMixer extends Canvas {
     this.canvasFPSTimerID = setTimeout(this.animationCycle.bind(this), 1000 / this.frameRate);
   }
 
+  stopCapturing() {
+    clearTimeout(this.canvasFPSTimerID);
+    this.clearCanvas();
+  }
+
+  clearCanvas() {
+    if (this.canvasElementContext) {
+      // purification of the work area Canvas
+      this.canvasElementContext
+      .clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+    }
+  }
+
   getStream() {
     return this.isCapturing
       ? this.canvasElement.captureStream(1000 / this.frameRate)
@@ -122,4 +144,4 @@ class CanvasMixer extends Canvas {
   }
 }
 
-export default CanvasMixer;
+export default VideoMixer;
