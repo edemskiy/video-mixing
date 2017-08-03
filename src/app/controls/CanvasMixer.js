@@ -5,15 +5,13 @@ import Canvas from './Canvas';
 import Container from './Container';
 
 class CanvasMixer extends Canvas {
-  constructor() {
+  constructor(containerParams) {
     super();
     this.setParametres({ id: 'canvas-mixer', frameRate: null, width: 1, height: 1 });
-
     this.containers = [];
-
     this.isCapturing = false;
 
-    this.containers.push(new Container({
+    this.containers.push(new Container(containerParams || {
       maxObjectsInLine: 3,
       objectSize: { width: 320, height: 240 },
       basePosition: { x: 0, y: 0 },
@@ -29,34 +27,31 @@ class CanvasMixer extends Canvas {
 
   addVideoElement(element) {
     const oldVideoElementsLength = _.size(this.videoElements);
-    const elementName = `video#${Math.random().toString(36).substring(7)}`;
-    this.videoElements = _.assign(this.videoElements, {
-      [elementName]: element,
+    element.container.objects.forEach((containerObject) => {
+      this.videoElements = _.assign(this.videoElements, {
+        [containerObject.name]: element,
+      });
+      this.containers[0].addNewObject(containerObject.name);
     });
-    this.containers[0].addNewObject(elementName);
 
-    console.log(element);
+    element.activateCamera();
 
-    element.toggleCamera();
-
-    if (_.size(this.videoElements) === 1 && oldVideoElementsLength === 0) {
+    if (_.size(this.videoElements) > 0 && oldVideoElementsLength === 0) {
       this.startCapturingFromVideo();
       this.isCapturing = true;
-      console.log('start capturing');
     }
     this.recalculateCanvasSize();
   }
 
   deleteVideoElement(name) {
     if (!_.size(this.videoElements)) return;
-    this.videoElements[name].toggleCamera();
+    this.videoElements[name].deactivateCamera();
     this.videoElements = _.pickBy(this.videoElements, (value, key) => key !== name);
     this.containers[0].deleteObject(name);
 
     if (!_.size(this.videoElements) && this.canvasFPSTimerID && this.isCapturing) {
       this.isCapturing = false;
       this.stopCapturing();
-      console.log('stop capturing');
     }
     this.recalculateCanvasSize();
   }
@@ -109,10 +104,18 @@ class CanvasMixer extends Canvas {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
+        const tmp = this.videoElements[element.name].container.objects
+          .filter(item => item.name === element.name)[0];
         this.canvasElementContext.drawImage(
           this.videoElements[element.name].videoElement,
-          element.coordinates.x, element.coordinates.y,
-          container.objectWidth, container.objectHeight,
+          tmp.coordinates.x,
+          tmp.coordinates.y,
+          this.videoElements[element.name].container.objectWidth,
+          this.videoElements[element.name].container.objectHeight,
+          element.coordinates.x,
+          element.coordinates.y,
+          container.objectWidth,
+          container.objectHeight,
         );
       });
     });

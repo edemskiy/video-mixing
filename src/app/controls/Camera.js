@@ -77,11 +77,29 @@ class Camera {
    * @param {successStreamCallback} successStreamCallback - A callback to run
    * @param {rejectStreamCallback} rejectStreamCallback - A callback to run
    */
+
+  activateCamera(successStreamCallback, rejectStreamCallback) {
+    if (this.isActive()) return;
+    navigator.mediaDevices.getUserMedia(this.constraints)
+        .then((stream) => {
+          successStreamCallback(stream);
+        })
+        .catch((err) => {
+          rejectStreamCallback(err);
+        });
+  }
+
+  deactivateCamera(callback) {
+    if (this.isActive()) {
+      this.stream.getVideoTracks()[0].stop();
+      this.stream = null;
+      callback(this.stream);
+    }
+  }
   toggleCamera(successStreamCallback, rejectStreamCallback) {
     if (!this.stream) {
       navigator.mediaDevices.getUserMedia(this.constraints)
         .then((stream) => {
-          this.stream = stream;
           successStreamCallback(stream);
         })
         .catch((err) => {

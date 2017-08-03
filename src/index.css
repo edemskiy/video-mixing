@@ -20,3 +20,8 @@ button {
 .hidden {
   display: none;
 }
+
+.canvases canvas {
+  border: 2px solid black;
+  display: block;
+}

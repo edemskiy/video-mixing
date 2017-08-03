@@ -129,8 +129,9 @@ class Container {
     if (!this.isEmpty()) {
       if (this.isHorizontal) {
         const elementFullWidth = this.objectWidth + this.paddingLeft + this.paddingRight;
-        if (this.width < this.maxObjectsInLine * elementFullWidth) {
-          this.width = this.maxObjectsInLine * elementFullWidth;
+        if (this.width <= this.maxObjectsInLine * elementFullWidth) {
+          if (this.allLines === 1) this.width = elementFullWidth * _.size(this.objects);
+          else this.width = this.maxObjectsInLine * elementFullWidth;
         }
         this.height = this.allLines * (this.objectHeight + this.paddingTop + this.paddingBottom);
       } else {
