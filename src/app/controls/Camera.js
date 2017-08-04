@@ -1,14 +1,20 @@
 /* global window, document, navigator */
-/* eslint-disable nothing */
 import Container from './Container';
-
+/** Class representing a Camera. */
 class Camera {
+  /**
+   * Create a Camera.
+   * @param {Object} parameters - parametres object.
+   * @param {Object} parametres.constraints - a MediaStreamConstraints object.
+   * @param {MediaStream} parametres.stream - a MediaStream object.
+   * @param {Container} parametres.container - a Container object.
+   * that contains information about the location of the video in the stream.
+   */
   constructor({ constraints, stream, container }) {
     this.canvasFPSTimerID = undefined;
     this.setConstraints(constraints);
     this.videoElement = document.createElement('video');
     this.stream = stream || null;
-
     this.container = container || new Container({});
     if (!container) {
       this.container.addNewObject(Math.random().toString(36).substring(7));
@@ -23,8 +29,8 @@ class Camera {
     }
   }
   /**
-   * Alternative for getUserMedia
-   * @param {Object} constraints - MediaStreamConstraints object
+   * Alternative for getUserMedia.
+   * @param {Object} constraints - MediaStreamConstraints object.
    */
   static promisifiedOldGUM(constraints) {
     // First get ahold of getUserMedia, if present
@@ -44,7 +50,10 @@ class Camera {
       getUserMedia.call(navigator, constraints, successCallback, errorCallback);
     });
   }
-
+  /**
+   * Setting constraints for capturing from user camera.
+   * @param {Object} parametres.constraints - a MediaStreamConstraints object.
+   */
   setConstraints(constraints) {
     this.constraints = constraints || {
       audio: false,
@@ -52,14 +61,30 @@ class Camera {
       frameRate: { ideal: 10, max: 15 },
     };
   }
-
+  /*
+   * Setting a stream object. Stopping video if null provided.
+   * @param {MediaStream} parametres.stream - a MediaStream object.
+   */
+  setStream(stream) {
+    if (stream) {
+      this.stream = stream;
+    } else {
+      this.videoElement.pause();
+      this.videoElement.src = '';
+    }
+  }
+  /**
+   * Start playing video from a stream.
+   */
   playVideo() {
     this.videoElement.src = window.URL.createObjectURL(this.stream);
     this.videoElement.onloadedmetadata = () => {
       this.videoElement.play();
     };
   }
-
+  /**
+   * Play video if stream exist. Otherwise get stream from user camera and start playing video.
+   */
   activateCamera() {
     if (this.stream) {
       this.playVideo();
@@ -74,21 +99,14 @@ class Camera {
         });
     }
   }
-
+  /**
+   * Set stream to null and stop playing a video.
+   */
   deactivateCamera() {
     if (this.stream) {
       this.stream.getVideoTracks()[0].stop();
       this.stream = null;
       this.setStream(this.stream);
-    }
-  }
-
-  setStream(stream) {
-    if (stream) {
-      this.stream = stream;
-    } else {
-      this.videoElement.pause();
-      this.videoElement.src = '';
     }
   }
 }
