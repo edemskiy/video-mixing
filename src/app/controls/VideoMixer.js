@@ -1,9 +1,27 @@
 /* global requestAnimationFrame, document */
-/* eslint-disable no-console */
 import _ from 'lodash';
 import Container from './Container';
-
+/** Class representing a Container. */
 class VideoMixer {
+  /**
+   * Create a VideoMixer.
+   * @param {Object} containerParams - containerParams of the container
+   * @param {string} containerParams.name - The name of the container.
+   * @param {boolean} containerParams.isHorizontal - Represents orientation of container.
+   * @param {number} containerParams.maxObjectsInLine - Maximum number of elements in a row(column).
+   * @param {Object} containerParams.objectSize - size of the single element in container.
+   * @param {number} containerParams.objectSize.width - width of the single element in container.
+   * @param {number} containerParams.objectSize.height - height of the single element in container.
+   * @param {Object} containerParams.basePosition - coordinates of top left corner of the container.
+   * @param {number} containerParams.basePosition.x -
+   * x coordinate of top left corner of the container.
+   * @param {number} containerParams.basePosition.y -
+   * y coordinate of top left corner of the container.
+   * @param {number} containerParams.paddingTop - top indent of the container element
+   * @param {number} containerParams.paddingBottom - bottom indent of the container element
+   * @param {number} containerParams.paddingLeft - left indent of the container element
+   * @param {number} containerParams.paddingRight - right indent of the container element
+   */
   constructor(containerParams) {
     this.canvasElement = document.createElement('canvas');
     this.canvasElementContext = this.canvasElement.getContext('2d');
@@ -24,7 +42,14 @@ class VideoMixer {
 
     this.videoElements = {};
   }
-
+  /**
+   * Set parametres for canvas element.
+   * @param {Object} parametres - parametres object.
+   * @param {string} parametres.id - id of canvas element.
+   * @param {number} parametres.frameRate - Frequency of canvas update in frames per second.
+   * @param {number} parametres.width - initial width of canvas.
+   * @param {number} parametres.height - initial height of canvas.
+   */
   setParametres({ id, frameRate, width, height }) {
     this.canvasElement.id = id || '';
     this.canvasElementContext.width = width || 320;
@@ -33,7 +58,10 @@ class VideoMixer {
     this.canvasElement.height = height || 240;
     this.frameRate = frameRate || 25;
   }
-
+  /**
+   * Add a Camera object to mixer.
+   * @param {Camera} - a Camera object
+   */
   addVideoElement(element) {
     const oldVideoElementsLength = _.size(this.videoElements);
     element.container.objects.forEach((containerObject) => {
@@ -51,7 +79,10 @@ class VideoMixer {
     }
     this.recalculateCanvasSize();
   }
-
+  /**
+   * Delete Camera object from mixer by name.
+   * @param {string} name - the name of the object to be deleted.
+   */
   deleteVideoElement(name) {
     if (!_.size(this.videoElements)) return;
     this.videoElements[name].deactivateCamera();
@@ -64,7 +95,9 @@ class VideoMixer {
     }
     this.recalculateCanvasSize();
   }
-
+  /**
+   * Reacalculate size of canvas element with current parametres
+   */
   recalculateCanvasSize() {
     let width = 0;
     let height = 0;
@@ -98,16 +131,22 @@ class VideoMixer {
       this.canvasElementContext.height = 1;
     }
   }
-
+  /**
+   * Start cycle of capturing video from all cameras to canvas element.
+   */
   startCapturingFromVideo() {
     this.canvasFPSTimerID = setTimeout(this.animationCycle.bind(this), 1000 / this.frameRate);
   }
-
+  /**
+   * Stop capturing video from all cameras to canvas element.
+   */
   stopCapturing() {
     clearTimeout(this.canvasFPSTimerID);
     this.clearCanvas();
   }
-
+  /**
+   * Clear canvas element by sets all pixels of canvas to transparent black.
+   */
   clearCanvas() {
     if (this.canvasElementContext) {
       // purification of the work area Canvas
@@ -115,13 +154,18 @@ class VideoMixer {
       .clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
     }
   }
-
+  /**
+   * Capture stream from canvas element.
+   * @returns {MediaStream} - a MediaStream object.
+   */
   getStream() {
     return this.isCapturing
       ? this.canvasElement.captureStream(1000 / this.frameRate)
       : null;
   }
-
+  /**
+   * Capturing video from all cameras to canvas element.
+   */
   animationCycle() {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
     this.containers.forEach((container) => {
