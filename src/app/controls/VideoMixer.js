@@ -31,8 +31,8 @@ class VideoMixer {
 
     this.containers.push(new Container(containerParams || {
       maxObjectsInLine: 3,
-      objectSize: { width: 320, height: 240 },
-      basePosition: { x: 0, y: 0 },
+      objectSize: { width: 133, height: 100 },
+      basePosition: { x: 500, y: 0 },
       isHorizontal: true,
       paddingTop: 10,
       paddingBottom: 20,
@@ -41,6 +41,42 @@ class VideoMixer {
     }));
 
     this.videoElements = {};
+    this.canvasElement.onmousemove = this.pointerMove.bind(this);
+    this.canvasElement.onmousedown = this.pointerDown.bind(this);
+    this.canvasElement.onmouseup = this.pointerUp.bind(this);
+  }
+
+  getObjectIdByCoord(x, y) {
+    for (let i = 0; i < _.size(this.containers[0].objects); i += 1) {
+      const object = this.containers[0].objects[i];
+      const condition = (
+        x > object.coordinates.x &&
+        x < object.coordinates.x + this.containers[0].objectWidth &&
+        y > object.coordinates.y &&
+        y < object.coordinates.y + this.containers[0].objectHeight
+      );
+      if (condition) return i;
+    }
+    return null;
+  }
+
+  pointerDown(e) {
+    const id = this.getObjectIdByCoord(e.offsetX, e.offsetY);
+    this.stopCapturing();
+    this.containers[0].objects.push(this.containers[0].objects.splice(id, 1)[0]);
+    this.movingVideo = _.last(this.containers[0].objects);
+    this.startCapturingFromVideo();
+  }
+
+  pointerMove(e) {
+    if (this.movingVideo) {
+      this.movingVideo.coordinates.x = e.offsetX - (this.containers[0].objectWidth / 2);
+      this.movingVideo.coordinates.y = e.offsetY - (this.containers[0].objectHeight / 2);
+    }
+  }
+
+  pointerUp() {
+    this.movingVideo = null;
   }
   /**
    * Set parametres for canvas element.
@@ -85,7 +121,7 @@ class VideoMixer {
    */
   deleteVideoElement(name) {
     if (!_.size(this.videoElements)) return;
-    this.videoElements[name].deactivateCamera();
+    // this.videoElements[name].deactivateCamera();
     this.videoElements = _.pickBy(this.videoElements, (value, key) => key !== name);
     this.containers[0].deleteObject(name);
 
@@ -142,7 +178,7 @@ class VideoMixer {
    */
   stopCapturing() {
     clearTimeout(this.canvasFPSTimerID);
-    this.clearCanvas();
+    // this.clearCanvas();
   }
   /**
    * Clear canvas element by sets all pixels of canvas to transparent black.
@@ -168,6 +204,7 @@ class VideoMixer {
    */
   animationCycle() {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
+    this.clearCanvas();
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
         const tmp = this.videoElements[element.name].container.objects
