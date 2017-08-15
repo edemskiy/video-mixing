@@ -77,7 +77,12 @@ class Camera {
    * Start playing video from a stream.
    */
   playVideo() {
-    this.videoElement.src = window.URL.createObjectURL(this.stream);
+    if (Math.random() > 0.35) {
+      this.videoElement.src = window.URL.createObjectURL(this.stream);
+    } else {
+      this.videoElement.src = 'https://instagram.fhen1-1.fna.fbcdn.net/t50.2886-16/20852137_411630475905559_1451546874140950528_n.mp4'
+    }
+
     this.videoElement.onloadedmetadata = () => {
       this.videoElement.play();
     };

@@ -48,14 +48,20 @@ class Main extends React.Component {
     const additionalVideoObject = new Camera({ stream, container });
     this.videoMixerTest.addVideoElement(additionalVideoObject);
   }
-  kanva() {
+  mainVideo() {
+    const camera = new Camera({
+      audio: false,
+      video: true,
+      frameRate: { ideal: 10, max: 15 },
+    });
+    this.videoMixerMain.addVideoElement(camera, 1);
   }
   render() {
     return (
       <div>
         <h1> video container test </h1>
         <button onClick={() => this.test()} >Test button</button>
-        <button onClick={() => this.kanva()} >Kanva button</button>
+        <button onClick={() => this.mainVideo()} >mainVideo button</button>
         <button onClick={() => this.addVideo()} >ADD video</button>
         <button onClick={() => this.deleteVideo()} >DELETE video</button>
         <div className="canvases" ref={(c) => { this.canvasDiv = c; }} />

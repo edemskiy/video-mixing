@@ -32,13 +32,24 @@ class VideoMixer {
     this.containers.push(new Container(containerParams || {
       maxObjectsInLine: 3,
       objectSize: { width: 133, height: 100 },
-      basePosition: { x: 500, y: 0 },
+      basePosition: { x: 600, y: 0 },
       isHorizontal: true,
       paddingTop: 10,
-      paddingBottom: 20,
+      paddingBottom: 10,
       paddingLeft: 10,
       paddingRight: 10,
     }));
+
+    this.mainContainer = new Container({
+      maxObjectsInLine: 1,
+      objectSize: { width: 533, height: 400 },
+      basePosition: { x: 0, y: 0 },
+      isHorizontal: true,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingLeft: 10,
+      paddingRight: 10,
+    });
 
     this.videoElements = {};
     this.canvasElement.onmousemove = this.pointerMove.bind(this);
@@ -62,10 +73,13 @@ class VideoMixer {
 
   pointerDown(e) {
     const id = this.getObjectIdByCoord(e.offsetX, e.offsetY);
-    this.stopCapturing();
-    this.containers[0].objects.push(this.containers[0].objects.splice(id, 1)[0]);
-    this.movingVideo = _.last(this.containers[0].objects);
-    this.startCapturingFromVideo();
+    if (!_.isNull(id)) {
+      this.stopCapturing();
+      this.containers[0].objects.push(this.containers[0].objects.splice(id, 1)[0]);
+      this.movingVideo = _.last(this.containers[0].objects);
+      this.initialPosition = { ...this.movingVideo.coordinates };
+      this.startCapturingFromVideo();
+    }
   }
 
   pointerMove(e) {
@@ -76,7 +90,27 @@ class VideoMixer {
   }
 
   pointerUp() {
-    this.movingVideo = null;
+    if (this.movingVideo) {
+      const mainContainerObjects = this.mainContainer.objects;
+      const mainObjWidth = this.mainContainer.objectWidth;
+      const mainObjHeight = this.mainContainer.objectHeight;
+      const condition = (
+        this.movingVideo.coordinates.x > mainContainerObjects[0].coordinates.x + mainObjWidth ||
+        this.movingVideo.coordinates.y > mainContainerObjects[0].coordinates.y + mainObjHeight ||
+        this.movingVideo.coordinates.x + this.containers[0].objectWidth < mainContainerObjects[0].coordinates.x ||
+        this.movingVideo.coordinates.y + this.containers[0].objectHeight < mainContainerObjects[0].coordinates.y
+      );
+
+      if (!condition) {
+        const tmpName = this.movingVideo.name;
+        this.movingVideo.name = mainContainerObjects[0].name;
+        mainContainerObjects[0].name = tmpName;
+      }
+
+      this.movingVideo.coordinates = { ...this.initialPosition };
+      this.movingVideo = null;
+      this.initialPosition = null;
+    }
   }
   /**
    * Set parametres for canvas element.
@@ -98,13 +132,18 @@ class VideoMixer {
    * Add a Camera object to mixer.
    * @param {Camera} - a Camera object
    */
-  addVideoElement(element) {
+  addVideoElement(element, id) {
     const oldVideoElementsLength = _.size(this.videoElements);
     element.container.objects.forEach((containerObject) => {
       this.videoElements = _.assign(this.videoElements, {
         [containerObject.name]: element,
       });
-      this.containers[0].addNewObject(containerObject.name);
+
+      if (id) {
+        this.mainContainer.addNewObject(containerObject.name);
+      } else {
+        this.containers[0].addNewObject(containerObject.name);
+      }
     });
 
     element.activateCamera();
@@ -205,10 +244,20 @@ class VideoMixer {
   animationCycle() {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
     this.clearCanvas();
+    // console.log(this.mainContainer);
+    this.canvasElementContext.drawImage(
+      this.videoElements[this.mainContainer.objects[0].name].videoElement,
+      this.mainContainer.positionX + 10,
+      this.mainContainer.positionY + 10,
+      this.mainContainer.objectWidth,
+      this.mainContainer.objectHeight,
+    );
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
         const tmp = this.videoElements[element.name].container.objects
           .filter(item => item.name === element.name)[0];
+        this.canvasElementContext.rect(10, 10, 533, 400);
+        this.canvasElementContext.stroke();
         this.canvasElementContext.drawImage(
           this.videoElements[element.name].videoElement,
           tmp.coordinates.x,
