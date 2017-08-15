@@ -56,7 +56,7 @@ class Camera {
    */
   setConstraints(constraints) {
     this.constraints = constraints || {
-      audio: false,
+      audio: true,
       video: { width: 320, height: 240 },
       frameRate: { ideal: 10, max: 15 },
     };
@@ -77,14 +77,18 @@ class Camera {
    * Start playing video from a stream.
    */
   playVideo() {
-    if (Math.random() > 0.35) {
+    if (Math.random() > 0.5) {
       this.videoElement.src = window.URL.createObjectURL(this.stream);
     } else {
-      this.videoElement.src = 'https://instagram.fhen1-1.fna.fbcdn.net/t50.2886-16/20852137_411630475905559_1451546874140950528_n.mp4'
+      this.videoElement.src = 'http://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_1mb.mp4';
     }
 
     this.videoElement.onloadedmetadata = () => {
+      this.container.objectWidth = this.videoElement.videoWidth;
+      this.container.objectHeight = this.videoElement.videoHeight;
       this.videoElement.play();
+      this.videoElement.muted = true;
+      this.videoElement.loop = true;
     };
   }
   /**

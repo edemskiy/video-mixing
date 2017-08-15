@@ -1,6 +1,7 @@
 /* global requestAnimationFrame, document */
 import _ from 'lodash';
 import Container from './Container';
+import Camera from './Camera';
 /** Class representing a Container. */
 class VideoMixer {
   /**
@@ -29,6 +30,17 @@ class VideoMixer {
     this.containers = [];
     this.isCapturing = false;
 
+    this.containers.push(new Container({
+      maxObjectsInLine: 1,
+      objectSize: { width: 533, height: 400 },
+      basePosition: { x: 0, y: 0 },
+      isHorizontal: true,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingLeft: 10,
+      paddingRight: 10,
+    }));
+
     this.containers.push(new Container(containerParams || {
       maxObjectsInLine: 3,
       objectSize: { width: 133, height: 100 },
@@ -40,17 +52,6 @@ class VideoMixer {
       paddingRight: 10,
     }));
 
-    this.mainContainer = new Container({
-      maxObjectsInLine: 1,
-      objectSize: { width: 533, height: 400 },
-      basePosition: { x: 0, y: 0 },
-      isHorizontal: true,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
-    });
-
     this.videoElements = {};
     this.canvasElement.onmousemove = this.pointerMove.bind(this);
     this.canvasElement.onmousedown = this.pointerDown.bind(this);
@@ -58,25 +59,37 @@ class VideoMixer {
   }
 
   getObjectIdByCoord(x, y) {
-    for (let i = 0; i < _.size(this.containers[0].objects); i += 1) {
-      const object = this.containers[0].objects[i];
-      const condition = (
-        x > object.coordinates.x &&
-        x < object.coordinates.x + this.containers[0].objectWidth &&
-        y > object.coordinates.y &&
-        y < object.coordinates.y + this.containers[0].objectHeight
-      );
-      if (condition) return i;
+    for (let i = 1; i < _.size(this.containers); i += 1) {
+      for (let j = 0; j < _.size(this.containers[i].objects); j += 1) {
+        const object = this.containers[i].objects[j];
+        const condition = (
+          x > object.coordinates.x &&
+          x < object.coordinates.x + this.containers[i].objectWidth &&
+          y > object.coordinates.y &&
+          y < object.coordinates.y + this.containers[i].objectHeight
+        );
+        if (condition) {
+          return {
+            containerId: i,
+            objId: j,
+          };
+        }
+      }
     }
     return null;
   }
 
   pointerDown(e) {
-    const id = this.getObjectIdByCoord(e.offsetX, e.offsetY);
-    if (!_.isNull(id)) {
+    const objInfo = this.getObjectIdByCoord(e.offsetX, e.offsetY);
+    if (!_.isNull(objInfo)) {
       this.stopCapturing();
-      this.containers[0].objects.push(this.containers[0].objects.splice(id, 1)[0]);
-      this.movingVideo = _.last(this.containers[0].objects);
+      this.containers[objInfo.containerId].objects
+        .push(this.containers[objInfo.containerId].objects.splice(objInfo.objId, 1)[0]);
+      this.movingVideo = _.last(this.containers[objInfo.containerId].objects);
+      this.movingVideoSize = {
+        height: this.containers[objInfo.containerId].objectHeight,
+        width: this.containers[objInfo.containerId].objectWidth,
+      };
       this.initialPosition = { ...this.movingVideo.coordinates };
       this.startCapturingFromVideo();
     }
@@ -84,16 +97,16 @@ class VideoMixer {
 
   pointerMove(e) {
     if (this.movingVideo) {
-      this.movingVideo.coordinates.x = e.offsetX - (this.containers[0].objectWidth / 2);
-      this.movingVideo.coordinates.y = e.offsetY - (this.containers[0].objectHeight / 2);
+      this.movingVideo.coordinates.x = e.offsetX - (this.movingVideoSize.width / 2);
+      this.movingVideo.coordinates.y = e.offsetY - (this.movingVideoSize.height / 2);
     }
   }
 
   pointerUp() {
     if (this.movingVideo) {
-      const mainContainerObjects = this.mainContainer.objects;
-      const mainObjWidth = this.mainContainer.objectWidth;
-      const mainObjHeight = this.mainContainer.objectHeight;
+      const mainContainerObjects = this.containers[0].objects;
+      const mainObjWidth = this.containers[0].objectWidth;
+      const mainObjHeight = this.containers[0].objectHeight;
       const condition = (
         this.movingVideo.coordinates.x > mainContainerObjects[0].coordinates.x + mainObjWidth ||
         this.movingVideo.coordinates.y > mainContainerObjects[0].coordinates.y + mainObjHeight ||
@@ -103,6 +116,9 @@ class VideoMixer {
 
       if (!condition) {
         const tmpName = this.movingVideo.name;
+        this.videoElements[mainContainerObjects[0].name].videoElement.muted = true;
+        this.videoElements[tmpName].videoElement.muted = false;
+
         this.movingVideo.name = mainContainerObjects[0].name;
         mainContainerObjects[0].name = tmpName;
       }
@@ -139,10 +155,10 @@ class VideoMixer {
         [containerObject.name]: element,
       });
 
-      if (id) {
-        this.mainContainer.addNewObject(containerObject.name);
+      if (id === undefined) {
+        this.containers[1].addNewObject(containerObject.name);
       } else {
-        this.containers[0].addNewObject(containerObject.name);
+        this.containers[id].addNewObject(containerObject.name);
       }
     });
 
@@ -244,14 +260,6 @@ class VideoMixer {
   animationCycle() {
     requestAnimationFrame(this.startCapturingFromVideo.bind(this));
     this.clearCanvas();
-    // console.log(this.mainContainer);
-    this.canvasElementContext.drawImage(
-      this.videoElements[this.mainContainer.objects[0].name].videoElement,
-      this.mainContainer.positionX + 10,
-      this.mainContainer.positionY + 10,
-      this.mainContainer.objectWidth,
-      this.mainContainer.objectHeight,
-    );
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
         const tmp = this.videoElements[element.name].container.objects

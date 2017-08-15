@@ -26,7 +26,7 @@ class Main extends React.Component {
 
   addVideo() {
     const camera = new Camera({
-      audio: false,
+      audio: true,
       video: { width: 320, height: 240 },
       frameRate: { ideal: 10, max: 15 },
     });
@@ -50,11 +50,11 @@ class Main extends React.Component {
   }
   mainVideo() {
     const camera = new Camera({
-      audio: false,
+      audio: true,
       video: true,
       frameRate: { ideal: 10, max: 15 },
     });
-    this.videoMixerMain.addVideoElement(camera, 1);
+    this.videoMixerMain.addVideoElement(camera, 0);
   }
   render() {
     return (
