@@ -115,8 +115,8 @@ class VideoMixer {
 
       if (!condition) {
         const tmpName = this.movingVideo.name;
-        this.videoElements[mainContainerObjects[0].name].videoElement.muted = true;
-        this.videoElements[tmpName].videoElement.muted = false;
+        this.videoElements[mainContainerObjects[0].name].muted = true;
+        this.videoElements[tmpName].muted = false;
 
         this.movingVideo.name = mainContainerObjects[0].name;
         mainContainerObjects[0].name = tmpName;
@@ -147,21 +147,27 @@ class VideoMixer {
    * Add a Camera object to mixer.
    * @param {Camera} - a Camera object
    */
-  addVideoElement(element, id) {
+  addVideoElement(src, id) {
     const oldVideoElementsLength = _.size(this.videoElements);
-    element.container.objects.forEach((containerObject) => {
-      this.videoElements = _.assign(this.videoElements, {
-        [containerObject.name]: element,
-      });
-
-      if (id === undefined) {
-        this.containers[1].addNewObject(containerObject.name);
-      } else {
-        this.containers[id].addNewObject(containerObject.name);
-      }
+    const name = Math.random().toString(36).substring(7);
+    const videoElement = document.createElement('video');
+    videoElement.src = src;
+    videoElement.onloadedmetadata = () => {
+      videoElement.play();
+      videoElement.muted = true;
+      videoElement.loop = true;
+    };
+    this.videoElements = _.assign(this.videoElements, {
+      [name]: videoElement,
     });
 
-    element.activateCamera();
+    if (oldVideoElementsLength === 0) {
+      this.containers[0].addNewObject(name);
+    } else if (id === undefined) {
+      this.containers[1].addNewObject(name);
+    } else {
+      this.containers[id].addNewObject(name);
+    }
 
     if (_.size(this.videoElements) > 0 && oldVideoElementsLength === 0) {
       this.startCapturingFromVideo();
@@ -261,16 +267,10 @@ class VideoMixer {
     this.clearCanvas();
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
-        const tmp = this.videoElements[element.name].container.objects
-          .filter(item => item.name === element.name)[0];
         this.canvasElementContext.rect(10, 10, 533, 400);
         this.canvasElementContext.stroke();
         this.canvasElementContext.drawImage(
-          this.videoElements[element.name].videoElement,
-          tmp.coordinates.x,
-          tmp.coordinates.y,
-          this.videoElements[element.name].container.objectWidth,
-          this.videoElements[element.name].container.objectHeight,
+          this.videoElements[element.name],
           element.coordinates.x,
           element.coordinates.y,
           container.objectWidth,
