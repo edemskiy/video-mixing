@@ -1,7 +1,6 @@
 /* global requestAnimationFrame, document */
 import _ from 'lodash';
 import Container from './Container';
-import Camera from './Camera';
 /** Class representing a Container. */
 class VideoMixer {
   /**
