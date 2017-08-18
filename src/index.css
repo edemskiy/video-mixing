@@ -20,8 +20,41 @@ button {
 .hidden {
   display: none;
 }
+.video-container-wrapper {
+  margin-top: 20px;
+}
+.video-container {
+  border: 1px;
+  position: relative;
+}
+.video-container video{
+  border: 1px solid;
+  position: absolute;
+}
 
-.canvases canvas {
-  border: 2px solid black;
-  display: block;
+.input-src {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+.input-src p {
+  margin: auto 5px;
+  font-size: 18px;
+}
+.input-src input {
+  font-size: 14px;
+  padding: 2px 5px;
+  margin: 0;
+  outline: none;
+}
+.input-src button {
+  border: 0;
+  margin: 0;
+  padding: 5px 10px;
+  color: #fff;
+  background-color: #6e76e7;
+  outline: none;
+}
+.input-src button:hover {
+  background-color: #8f95f0;
 }

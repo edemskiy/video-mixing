@@ -1,4 +1,4 @@
-/* global requestAnimationFrame, document */
+/* global requestAnimationFrame, document, window */
 import _ from 'lodash';
 import Container from './Container';
 /** Class representing a Container. */
@@ -22,7 +22,7 @@ class VideoMixer {
    * @param {number} containerParams.paddingLeft - left indent of the container element
    * @param {number} containerParams.paddingRight - right indent of the container element
    */
-  constructor(containerParams) {
+  constructor() {
     this.canvasElement = document.createElement('canvas');
     this.canvasElementContext = this.canvasElement.getContext('2d');
     this.setParametres({ id: 'canvas-mixer', frameRate: null, width: 1, height: 1 });
@@ -31,7 +31,7 @@ class VideoMixer {
 
     this.containers.push(new Container({
       maxObjectsInLine: 1,
-      objectSize: { width: 533, height: 400 },
+      objectSize: { width: window.innerWidth * 0.45, height: (window.innerWidth * 9 * 0.45) / 16 },
       basePosition: { x: 0, y: 0 },
       isHorizontal: true,
       paddingTop: 10,
@@ -40,15 +40,38 @@ class VideoMixer {
       paddingRight: 10,
     }));
 
-    this.containers.push(new Container(containerParams || {
-      maxObjectsInLine: 3,
-      objectSize: { width: 133, height: 100 },
-      basePosition: { x: 600, y: 0 },
+    this.containers.push(new Container({
+      maxObjectsInLine: 2,
+      objectSize: {
+        width: (((this.containers[0].objectHeight / 2) - 10) * 16) / 9,
+        height: (this.containers[0].objectHeight / 2) - 10,
+      },
+      basePosition: {
+        x: this.containers[0].objectWidth + (1.5 * (this.containers[0].paddingLeft + this.containers[0].paddingRight)),
+        y: 0,
+      },
       isHorizontal: true,
       paddingTop: 10,
       paddingBottom: 10,
       paddingLeft: 10,
       paddingRight: 10,
+    }));
+
+    this.containers.push(new Container({
+      maxObjectsInLine: 7,
+      objectSize: {
+        width: (window.innerWidth * 0.12),
+        height: (window.innerWidth * 0.12 * 9) / 16,
+      },
+      basePosition: {
+        x: 0,
+        y: this.containers[0].objectHeight + this.containers[0].paddingTop + this.containers[0].paddingBottom,
+      },
+      isHorizontal: true,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingLeft: 5,
+      paddingRight: 5,
     }));
 
     this.videoElements = {};
@@ -109,13 +132,17 @@ class VideoMixer {
       const condition = (
         this.movingVideo.coordinates.x > mainContainerObjects[0].coordinates.x + mainObjWidth ||
         this.movingVideo.coordinates.y > mainContainerObjects[0].coordinates.y + mainObjHeight ||
-        this.movingVideo.coordinates.x + this.containers[0].objectWidth < mainContainerObjects[0].coordinates.x ||
-        this.movingVideo.coordinates.y + this.containers[0].objectHeight < mainContainerObjects[0].coordinates.y
+        this.movingVideo.coordinates.x + this.containers[0].objectWidth
+          < mainContainerObjects[0].coordinates.x ||
+        this.movingVideo.coordinates.y + this.containers[0].objectHeight
+          < mainContainerObjects[0].coordinates.y
       );
 
       if (!condition) {
         const tmpName = this.movingVideo.name;
         this.videoElements[mainContainerObjects[0].name].muted = true;
+        // this.videoElements[mainContainerObjects[0].name].pause();
+        // this.videoElements[tmpName].play();
         this.videoElements[tmpName].muted = false;
 
         this.movingVideo.name = mainContainerObjects[0].name;
@@ -141,13 +168,13 @@ class VideoMixer {
     this.canvasElementContext.height = height || 240;
     this.canvasElement.width = width || 320;
     this.canvasElement.height = height || 240;
-    this.frameRate = frameRate || 25;
+    this.frameRate = frameRate || 28;
   }
   /**
-   * Add a Camera object to mixer.
-   * @param {Camera} - a Camera object
+   * Add a video to mixer by src link.
+   * @param {string} - src link to video
    */
-  addVideoElement(src, id) {
+  addVideoElement(src) {
     const oldVideoElementsLength = _.size(this.videoElements);
     const name = Math.random().toString(36).substring(7);
     const videoElement = document.createElement('video');
@@ -163,10 +190,10 @@ class VideoMixer {
 
     if (oldVideoElementsLength === 0) {
       this.containers[0].addNewObject(name);
-    } else if (id === undefined) {
+    } else if (this.containers[1].objects.length < 4) {
       this.containers[1].addNewObject(name);
     } else {
-      this.containers[id].addNewObject(name);
+      this.containers[2].addNewObject(name);
     }
 
     if (_.size(this.videoElements) > 0 && oldVideoElementsLength === 0) {
@@ -181,7 +208,6 @@ class VideoMixer {
    */
   deleteVideoElement(name) {
     if (!_.size(this.videoElements)) return;
-    // this.videoElements[name].deactivateCamera();
     this.videoElements = _.pickBy(this.videoElements, (value, key) => key !== name);
     this.containers[0].deleteObject(name);
 
@@ -267,8 +293,8 @@ class VideoMixer {
     this.clearCanvas();
     this.containers.forEach((container) => {
       container.objects.forEach((element) => {
-        this.canvasElementContext.rect(10, 10, 533, 400);
-        this.canvasElementContext.stroke();
+        // this.canvasElementContext.rect(10, 10, 500, 281);
+        // this.canvasElementContext.stroke();
         this.canvasElementContext.drawImage(
           this.videoElements[element.name],
           element.coordinates.x,
