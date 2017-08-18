@@ -1,14 +1,11 @@
 /* global window, document */
-/* eslint-disable */
 import React from 'react';
 import _ from 'lodash';
-import VideoMixer from '../controls/VideoMixer';
 import Container from '../controls/Container';
 
 class Main extends React.Component {
   constructor() {
     super();
-    this.videoMixerMain = new VideoMixer();
     this.videoElements = {};
     this.containers = [];
     this.containers.push(new Container({
@@ -29,7 +26,8 @@ class Main extends React.Component {
         height: (this.containers[0].objectHeight / 2) - 5,
       },
       basePosition: {
-        x: this.containers[0].objectWidth + (1.5 * (this.containers[0].paddingLeft + this.containers[0].paddingRight)),
+        x: this.containers[0].objectWidth +
+          (1.5 * (this.containers[0].paddingLeft + this.containers[0].paddingRight)),
         y: 0,
       },
       isHorizontal: true,
@@ -47,7 +45,8 @@ class Main extends React.Component {
       },
       basePosition: {
         x: 0,
-        y: this.containers[0].objectHeight + this.containers[0].paddingTop + this.containers[0].paddingBottom,
+        y: this.containers[0].objectHeight +
+          this.containers[0].paddingTop + this.containers[0].paddingBottom,
       },
       isHorizontal: true,
       paddingTop: 5,
@@ -60,13 +59,13 @@ class Main extends React.Component {
     for (let i = 0; i < 0; i += 1) this.addVideo();
   }
 
-  getContainerByObjName(name){
-    const container = this.containers.filter(container => (
-        Boolean(container.objects.filter(object => object.name === name).length)
+  getContainerByObjName(name) {
+    const container = this.containers.filter(cont => (
+        Boolean(cont.objects.filter(object => object.name === name).length)
       ))[0];
     const videoContainerObject = container.objects.filter(object => object.name === name)[0];
 
-    return {container, videoContainerObject};
+    return { container, videoContainerObject };
   }
 
   addVideo(src) {
@@ -80,7 +79,7 @@ class Main extends React.Component {
     videoElement.onloadedmetadata = () => {
       videoElement.play();
       videoElement.loop = true;
-      if(oldVideoElementsLength !== 0){
+      if (oldVideoElementsLength !== 0) {
         videoElement.muted = true;
       }
     };
@@ -94,7 +93,7 @@ class Main extends React.Component {
     } else if (this.containers[1].objects.length < 4) {
       this.containers[1].addNewObject(name);
     } else {
-      this.containers[2].addNewObject(name);      
+      this.containers[2].addNewObject(name);
     }
 
     const { container, videoContainerObject } = this.getContainerByObjName(name);
@@ -105,11 +104,10 @@ class Main extends React.Component {
     videoElement.style.left = `${videoContainerObject.coordinates.x}px`;
 
     videoElement.onpointerdown = () => {
-      const { container, videoContainerObject } = this.getContainerByObjName(name);
+      const { videoContainerObject } = this.getContainerByObjName(name);
       videoElement.style.zIndex = 100;
       videoElement.style.transition = '';
       const containerCoords = this.videoContainer.getBoundingClientRect();
-      
       const initialPosition = videoContainerObject.coordinates;
 
       document.onpointermove = (e) => {
@@ -119,7 +117,7 @@ class Main extends React.Component {
 
       videoElement.onpointerup = () => {
         let intersectedVideoContainer = null;
-        
+
         for (let i = 0; i < _.size(this.containers); i += 1) {
           for (let j = 0; j < _.size(this.containers[i].objects); j += 1) {
             if (this.videoElements[this.containers[i].objects[j].name] !== videoElement) {
@@ -127,8 +125,10 @@ class Main extends React.Component {
               const objWidth = container.objectWidth;
               const objHeight = container.objectHeight;
               const condition = (
-                parseFloat(videoElement.style.left) > container.objects[j].coordinates.x + objWidth ||
-                parseFloat(videoElement.style.top) > container.objects[j].coordinates.y + objHeight ||
+                parseFloat(videoElement.style.left) >
+                  container.objects[j].coordinates.x + objWidth ||
+                parseFloat(videoElement.style.top) >
+                  container.objects[j].coordinates.y + objHeight ||
                 parseFloat(videoElement.style.left) + container.objectWidth
                   < container.objects[j].coordinates.x ||
                 parseFloat(videoElement.style.top) + container.objectHeight
@@ -147,7 +147,7 @@ class Main extends React.Component {
         videoElement.style.left = `${initialPosition.x}px`;
         videoElement.style.top = `${initialPosition.y}px`;
         videoElement.style.zIndex = 0;
-        
+
         if (intersectedVideoContainer) {
           const intersectedVideo = this.videoElements[intersectedVideoContainer.name];
           const tmpName = intersectedVideoContainer.name;
