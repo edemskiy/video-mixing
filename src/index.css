@@ -34,8 +34,9 @@ button {
 
 .input-src {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: stretch;
+  margin-top: 20px;
 }
 .input-src p {
   margin: auto 5px;
